@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Pratyay360/md2smd/utils"
+	"github.com/light-cms/md2smd/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -90,8 +90,8 @@ func convertSingleFile(path string) error {
 var rootCmd = &cobra.Command{
 	Use:   "md2smd [file|dir...]",
 	Short: "Convert between Markdown and SuperMD (Zine) formats",
-	Long: `md2smd converts Markdown files to SuperMD (.smd) format used by 
-the Zine static site generator, and vice versa. SuperMD is an extension of Markdown that uses Scripty expressions embedded in link syntax for directives like images, links, sections, 
+	Long: `md2smd converts Markdown files to SuperMD (.smd) format used by
+the Zine static site generator, and vice versa. SuperMD is an extension of Markdown that uses Scripty expressions embedded in link syntax for directives like images, links, sections,
 and blocks.
 
 Supports any Markdown/MDX flavour regardless of file extension (.md, .mdx, .markdown, .mkd, etc.) -

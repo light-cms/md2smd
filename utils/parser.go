@@ -10,28 +10,26 @@ import (
 	"github.com/adrg/frontmatter"
 	"gopkg.in/yaml.v3"
 )
+
 var (
-	linkedImageRe     = regexp.MustCompile(`\[!\[([^\]]*)\]\(([^\s)]+)(?:\s+"([^"]*)")?\)\]\(([^\s)]+)(?:\s+"([^"]*)")?\)`)
-	imageRe           = regexp.MustCompile(`!\[([^\]]*)\]\(([^\s)]+)(?:\s+"([^"]*)")?\)`)
-	linkRe            = regexp.MustCompile(`\[([^\]]+)\]\(([^\s)]+)(?:\s+"([^"]*)")?\)`)
-	smdDirectiveRe    = regexp.MustCompile(`\[([^\]]*)\]\(`)
-	htmlCommentRe     = regexp.MustCompile(`(?s)<!--.*?-->`)
-	headingRe         = regexp.MustCompile(`(?m)^(\s{0,3})(#{1,6})(\s)`)
-	mdxImportRe       = regexp.MustCompile(`(?m)^\s*(import|export)\s+.*$`)
-	htmlTagRe         = regexp.MustCompile(`<[^>]+>`)
-	htmlLineRe        = regexp.MustCompile(`(?m)^\s*<[^>]+>\s*$`)
-	hrRe              = regexp.MustCompile(`(?m)^\s*([-*_][ \t]*){3,}\s*$`)
-	longDashFMRe      = regexp.MustCompile(`\A\s*-{5,}\s*\n([\s\S]*?)\n\s*-{5,}\s*\n`)
-	imageExprPat      = `\$image\.(?:url|asset|siteAsset|buildAsset)\("[^"]*"\)(?:\.alt\("[^"]*"\))?`
-	linkExprPat       = `\$link\.(?:url|ref|page|sub|sibling|site)(?:\("[^"]*"\))?(?:\.[a-zA-Z_]+\([^\)]*\))*`
-	smdLinkedImageRe  = regexp.MustCompile(`\[\[([^\]]*)\]\((` + `\$image\.(?:url|asset|siteAsset|buildAsset)\("[^"]*"\)(?:\.alt\("[^"]*"\))?` + `)\)\]\((` + `\$link\.(?:url|ref|page|sub|sibling|site)(?:\("[^"]*"\))?(?:\.[a-zA-Z_]+\([^\)]*\))*` + `)\)`)
-	// Legacy broken linked image where outer URL is still raw http(s)://... after a previous buggy conversion
+	linkedImageRe          = regexp.MustCompile(`\[!\[([^\]]*)\]\(([^\s)]+)(?:\s+"([^"]*)")?\)\]\(([^\s)]+)(?:\s+"([^"]*)")?\)`)
+	imageRe                = regexp.MustCompile(`!\[([^\]]*)\]\(([^\s)]+)(?:\s+"([^"]*)")?\)`)
+	linkRe                 = regexp.MustCompile(`\[([^\]]+)\]\(([^\s)]+)(?:\s+"([^"]*)")?\)`)
+	smdDirectiveRe         = regexp.MustCompile(`\[([^\]]*)\]\(`)
+	htmlCommentRe          = regexp.MustCompile(`(?s)<!--.*?-->`)
+	headingRe              = regexp.MustCompile(`(?m)^(\s{0,3})(#{1,6})(\s)`)
+	mdxImportRe            = regexp.MustCompile(`(?m)^\s*(import|export)\s+.*$`)
+	htmlTagRe              = regexp.MustCompile(`<[^>]+>`)
+	htmlLineRe             = regexp.MustCompile(`(?m)^\s*<[^>]+>\s*$`)
+	hrRe                   = regexp.MustCompile(`(?m)^\s*([-*_][ \t]*){3,}\s*$`)
+	longDashFMRe           = regexp.MustCompile(`\A\s*-{5,}\s*\n([\s\S]*?)\n\s*-{5,}\s*\n`)
+	smdLinkedImageRe       = regexp.MustCompile(`\[\[([^\]]*)\]\((` + `\$image\.(?:url|asset|siteAsset|buildAsset)\("[^"]*"\)(?:\.alt\("[^"]*"\))?` + `)\)\]\((` + `\$link\.(?:url|ref|page|sub|sibling|site)(?:\("[^"]*"\))?(?:\.[a-zA-Z_]+\([^\)]*\))*` + `)\)`)
 	smdLinkedImageLegacyRe = regexp.MustCompile(`\[\[([^\]]*)\]\((` + `\$image\.(?:url|asset|siteAsset|buildAsset)\("[^"]*"\)(?:\.alt\("[^"]*"\))?` + `)\)\]\((https?://[^\s)]+)\)`)
-	// =html linked image: ```=html\n<a href="..."...><img src="..."...></a>\n```
-	htmlLinkedImageRe = regexp.MustCompile(`(?s)` + "```" + `=html\n\s*<a\s+href="([^"]*?)"([^>]*)>\s*<img\s+src="([^"]*?)"([^>]*?)>\s*</a>\s*\n` + "```")
+	htmlLinkedImageRe      = regexp.MustCompile(`(?s)` + "```" + `=html\n\s*<a\s+href="([^"]*?)"([^>]*)>\s*<img\s+src="([^"]*?)"([^>]*?)>\s*</a>\s*\n` + "```")
 	// Any URI scheme (mailto:, tel:, ftp:, etc.) per RFC 3986: ALPHA *( ALPHA / DIGIT / "+" / "-" / "." ) ":"
 	uriSchemeRe = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9+.-]*:`)
 )
+
 func mapToZiggy(data map[string]interface{}, prefix string) string {
 	keys := make([]string, 0, len(data))
 	for k := range data {
@@ -178,7 +176,7 @@ func ziggyToMap(ziggy string) map[string]interface{} {
 		}
 		line = strings.TrimSuffix(line, ",")
 		line = strings.TrimSuffix(line, ";")
-		line = strings.TrimPrefix(line, ".") 
+		line = strings.TrimPrefix(line, ".")
 		if line == "" {
 			continue
 		}
@@ -186,7 +184,7 @@ func ziggyToMap(ziggy string) map[string]interface{} {
 		if parts == nil {
 			continue
 		}
-		keys := strings.Split(parts[0], ".") 
+		keys := strings.Split(parts[0], ".")
 		setNestedValue(data, keys, parseZiggyValue(parts[1]))
 	}
 	return data
@@ -521,12 +519,6 @@ func classifyLinkURL(url string) string {
 	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
 		return fmt.Sprintf("$link.url(%q).new(true)", url)
 	}
-	// Any other absolute URI with a scheme (mailto:, tel:, ftp://, ssh://, etc.)
-	// is an external URL, not an internal page reference. Without this,
-	// e.g. [a](mailto:a@b) would become $link.sibling("mailto:a@b") and Zine
-	// would fail the build with "unknown page".
-	// Network-style URLs (scheme://... or protocol-relative //...) open in a
-	// new tab like http(s); non-hierarchical schemes (mailto:, tel:) do not.
 	if uriSchemeRe.MatchString(url) {
 		if strings.Contains(url, "://") {
 			return fmt.Sprintf("$link.url(%q).new(true)", url)
@@ -770,10 +762,12 @@ func findMatchingParen(s string, start int) int {
 	}
 	return -1
 }
+
 type directiveCall struct {
 	function string
 	args     []string
 }
+
 func parseDirectiveCalls(expr string) (string, []directiveCall) {
 	expr = strings.TrimSpace(expr)
 	if !strings.HasPrefix(expr, "$") {
@@ -1028,21 +1022,20 @@ func sanitizeMatter(matter map[string]interface{}, body string) map[string]inter
 	if matter == nil {
 		matter = make(map[string]interface{})
 	}
-	// Whitelist of allowed top-level Page fields in Zine's .smd.ziggy-schema
 	allowed := map[string]bool{
-		"title":               true,
-		"description":         true,
-		"date":                true,
-		"authors":             true,
-		"author":              true, // alias, will be normalized to authors
-		"tags":                true,
-		"layout":              true,
-		"aliases":             true,
-		"alternatives":        true,
-		"translation_key":     true,
-		"draft":               true,
-		"forbid_subsections":  true,
-		"custom":              true,
+		"title":              true,
+		"description":        true,
+		"date":               true,
+		"authors":            true,
+		"author":             true, // alias, will be normalized to authors
+		"tags":               true,
+		"layout":             true,
+		"aliases":            true,
+		"alternatives":       true,
+		"translation_key":    true,
+		"draft":              true,
+		"forbid_subsections": true,
+		"custom":             true,
 	}
 	// Normalize author -> authors
 	if v, ok := matter["author"]; ok {
@@ -1231,6 +1224,7 @@ func MdToSmd(input string) (string, error) {
 	smdFM = "---\n" + smdFM + "---\n"
 	return smdFM + processed, nil
 }
+
 // RepairSmdContent fixes already-generated .smd files in-place: strips HTML comments
 // and normalizes heading levels so the document starts at #1 and never skips.
 func RepairSmdContent(input string) (string, error) {

@@ -1,11 +1,11 @@
 /*
-Copyright © 2026 Pratyay360
+Copyright © 2026 Light CMS <https://lightcms.me>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "github.com/Pratyay360/md2smd/cmd"
+import "github.com/light-cms/md2smd/cmd"
 
 func main() {
 	cmd.Execute()

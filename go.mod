@@ -1,4 +1,4 @@
-module github.com/Pratyay360/md2smd
+module github.com/light-cms/md2smd
 
 go 1.26.5
 
